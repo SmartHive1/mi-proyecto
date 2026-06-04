@@ -1,4 +1,4 @@
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, Boxes, BarChart3, TrendingUp, Bell, Settings, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { logout } from "@/lib/auth";
@@ -23,11 +23,11 @@ function BeeIcon({ className }: { className?: string }) {
 export function Sidebar() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { pathname } = useLocation();
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
+    navigate("/login");
   };
 
   return (
@@ -53,7 +53,7 @@ export function Sidebar() {
 
         <nav className="flex-1 px-3 py-4 space-y-1">
           {nav.map(({ to, label, icon: Icon }) => {
-            const active = path === to || path.startsWith(to + "/");
+            const active = pathname === to || pathname.startsWith(to + "/");
             return (
               <Link
                 key={to}
