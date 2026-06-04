@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-dsc)l_v7=bi)1ik*iv7(52&h+1d2(6#%wa6zpy!w=x27+6**kw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['app3.academia.ar', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -123,4 +123,6 @@ STATIC_URL = 'static/'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite/React
+    "https://app3.academia.ar"  # Django app
+    "http://app3.academia.ar"  # Django app
 ]
