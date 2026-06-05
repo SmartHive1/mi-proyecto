@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-dsc)l_v7=bi)1ik*iv7(52&h+1d2(6#%wa6zpy!w=x27+6**kw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['app3.academia.ar', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['api.app3.academia.ar', 'localhost', '127.0.0.1']
 
 
 # Application definition
