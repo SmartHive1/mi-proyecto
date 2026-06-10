@@ -1,8 +1,10 @@
+// src/pages/AnalisisPage.jsx
 import { useState } from 'react'
 import {
   AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { produccionMensual, comparativoData, cosechasData } from '../lib/mockData.js'
 
 const ANIOS = ['2023', '2024', '2025']
@@ -23,6 +25,29 @@ function TooltipPersonalizado({ active, payload, label }) {
 
 function AnalisisPage() {
   const [anioSeleccionado, setAnioSeleccionado] = useState('2025')
+  const [ordenCosechas, setOrdenCosechas] = useState({ campo: null, dir: 'asc' })
+
+  function toggleOrden(campo) {
+    setOrdenCosechas((prev) => ({
+      campo,
+      dir: prev.campo === campo && prev.dir === 'asc' ? 'desc' : 'asc',
+    }))
+  }
+
+  const cosechasOrdenadas = [...cosechasData].sort((a, b) => {
+    if (!ordenCosechas.campo) return 0
+    const va = a[ordenCosechas.campo]
+    const vb = b[ordenCosechas.campo]
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb
+    return ordenCosechas.dir === 'asc' ? cmp : -cmp
+  })
+
+  function IconOrden({ campo }) {
+    if (ordenCosechas.campo !== campo) return <ArrowUpDown size={12} className="ml-1 text-[#3a2a1e]" />
+    return ordenCosechas.dir === 'asc'
+      ? <ArrowUp size={12} className="ml-1 text-[#F5A623]" />
+      : <ArrowDown size={12} className="ml-1 text-[#F5A623]" />
+  }
 
   return (
     <div>
@@ -61,7 +86,7 @@ function AnalisisPage() {
         </div>
       </div>
 
-      {/* Comparativo */}
+      {/* Comparativo — ahora el filtro de año realmente funciona */}
       <div className="bg-[#231710] border border-[#2A1B13] rounded-2xl p-6 mb-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-[#FFF8ED] font-semibold text-base">Comparativo por colmenar</h2>
@@ -94,7 +119,7 @@ function AnalisisPage() {
         </div>
       </div>
 
-      {/* Tabla cosechas */}
+      {/* Tabla cosechas — ahora con ordenamiento */}
       <div className="bg-[#231710] border border-[#2A1B13] rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-[#2A1B13]">
           <h2 className="text-[#FFF8ED] font-semibold text-base">Detalle de cosechas</h2>
@@ -103,15 +128,27 @@ function AnalisisPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#2A1B13]">
-                {['Mes', 'Colmenar', 'Kg cosechados', 'Variación'].map((h) => (
-                  <th key={h} className="text-left px-6 py-3 text-[#80756A] text-xs font-semibold uppercase tracking-wider">
-                    {h}
+                {[
+                  { label: 'Mes', campo: 'mes' },
+                  { label: 'Colmenar', campo: 'colmenar' },
+                  { label: 'Kg cosechados', campo: 'kg' },
+                  { label: 'Variación', campo: 'variacion' },
+                ].map(({ label, campo }) => (
+                  <th
+                    key={campo}
+                    onClick={() => toggleOrden(campo)}
+                    className="text-left px-6 py-3 text-[#80756A] text-xs font-semibold uppercase tracking-wider cursor-pointer hover:text-[#FFF8ED] transition-colors duration-150 select-none"
+                  >
+                    <span className="flex items-center">
+                      {label}
+                      <IconOrden campo={campo} />
+                    </span>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {cosechasData.map((fila, i) => (
+              {cosechasOrdenadas.map((fila, i) => (
                 <tr key={i} className="border-b border-[#2A1B13]/50 hover:bg-[#2A1B13]/30 transition-colors duration-200">
                   <td className="px-6 py-4 text-[#FFF8ED] text-sm font-medium">{fila.mes}</td>
                   <td className="px-6 py-4 text-[#80756A] text-sm">{fila.colmenar}</td>

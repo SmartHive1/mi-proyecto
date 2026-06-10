@@ -1,3 +1,4 @@
+// src/components/layout/Navbar.jsx
 import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
@@ -7,18 +8,20 @@ import {
 import { useUsuario } from '../../contexts/UsuarioContext.jsx'
 import BeeIcon from '../BeeIcon.jsx'
 
-const links = [
+// Ya no importamos mockData acá — el badge viene del contexto
+
+const NAV_LINKS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/colmenares', label: 'Colmenares', icon: Warehouse },
   { to: '/analisis', label: 'Análisis', icon: BarChart2 },
   { to: '/predicciones', label: 'Predicciones', icon: TrendingUp },
-  { to: '/notificaciones', label: 'Notificaciones', icon: Bell },
+  { to: '/notificaciones', label: 'Notificaciones', icon: Bell, esBell: true },
   { to: '/configuracion', label: 'Configuración', icon: Settings },
 ]
 
 function ContenidoSidebar({ alCerrar }) {
   const navigate = useNavigate()
-  const { usuario, logout } = useUsuario()
+  const { usuario, logout, sinLeer } = useUsuario()
 
   function handleLogout() {
     logout()
@@ -52,7 +55,7 @@ function ContenidoSidebar({ alCerrar }) {
       )}
 
       <nav className="flex-1 px-3 mt-4 space-y-1 overflow-y-auto">
-        {links.map(({ to, label, icon: Icon }) => (
+        {NAV_LINKS.map(({ to, label, icon: Icon, esBell }) => (
           <NavLink
             key={to}
             to={to}
@@ -65,8 +68,21 @@ function ContenidoSidebar({ alCerrar }) {
               }`
             }
           >
-            <Icon size={18} />
-            {label}
+            {({ isActive }) => (
+              <>
+                <Icon size={18} />
+                <span className="flex-1">{label}</span>
+                {esBell && sinLeer > 0 && (
+                  <span
+                    className={`text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
+                      isActive ? 'bg-[#1A120B]/20 text-[#1A120B]' : 'bg-[#E53935] text-white'
+                    }`}
+                  >
+                    {sinLeer}
+                  </span>
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -89,12 +105,10 @@ function Navbar() {
 
   return (
     <>
-      {/* Sidebar desktop */}
       <aside className="hidden lg:flex flex-col w-64 bg-[#2A1B13] border-r border-[#231710] shrink-0">
         <ContenidoSidebar />
       </aside>
 
-      {/* Overlay móvil */}
       {sidebarAbierto && (
         <div
           className="fixed inset-0 z-40 bg-black/60 lg:hidden"
@@ -102,7 +116,6 @@ function Navbar() {
         />
       )}
 
-      {/* Sidebar móvil */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-[#2A1B13] border-r border-[#231710] flex flex-col transform transition-transform duration-200 ease-in-out lg:hidden ${
           sidebarAbierto ? 'translate-x-0' : '-translate-x-full'
@@ -111,7 +124,6 @@ function Navbar() {
         <ContenidoSidebar alCerrar={() => setSidebarAbierto(false)} />
       </aside>
 
-      {/* Topbar móvil */}
       <header className="lg:hidden flex items-center justify-between px-4 py-4 bg-[#2A1B13] border-b border-[#231710] shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-[#F5A623] flex items-center justify-center">

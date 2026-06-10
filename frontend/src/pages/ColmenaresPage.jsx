@@ -1,11 +1,21 @@
+// src/pages/ColmenaresPage.jsx
 import { useState } from 'react'
-import { Droplets, Weight } from 'lucide-react'
+import { Droplets, Weight, Search } from 'lucide-react'
 import { colmenares, colmenas } from '../lib/mockData.js'
 
 function ColmenaresPage() {
   const [selectedId, setSelectedId] = useState(colmenares[0].id)
+  const [busqueda, setBusqueda] = useState('')
+
   const colmenarSeleccionado = colmenares.find((c) => c.id === selectedId)
-  const colmenasDelSeleccionado = colmenas.filter((c) => c.colmenarId === selectedId)
+  const colmenasFiltradas = colmenas
+    .filter((c) => c.colmenarId === selectedId)
+    .filter((c) => c.numero.toLowerCase().includes(busqueda.toLowerCase()))
+
+  function handleCambiarColmenar(id) {
+    setSelectedId(id)
+    setBusqueda('')
+  }
 
   return (
     <div>
@@ -19,7 +29,7 @@ function ColmenaresPage() {
         {colmenares.map((c) => (
           <button
             key={c.id}
-            onClick={() => setSelectedId(c.id)}
+            onClick={() => handleCambiarColmenar(c.id)}
             className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
               selectedId === c.id
                 ? 'bg-[#F5A623] text-[#1A120B]'
@@ -44,9 +54,21 @@ function ColmenaresPage() {
         </div>
       </div>
 
+      {/* Buscador */}
+      <div className="relative mb-5">
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#80756A]" />
+        <input
+          type="text"
+          placeholder="Buscar colmena por número..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="w-full bg-[#231710] border border-[#2A1B13] rounded-xl pl-9 pr-4 py-2.5 text-sm text-[#FFF8ED] placeholder-[#80756A] focus:outline-none focus:border-[#F5A623]/40 transition-colors duration-200"
+        />
+      </div>
+
       {/* Lista de colmenas */}
       <div className="space-y-3">
-        {colmenasDelSeleccionado.map((colmena) => {
+        {colmenasFiltradas.map((colmena) => {
           const nivelColor =
             colmena.nivelAlimento <= 35
               ? '#E53935'
@@ -92,9 +114,11 @@ function ColmenaresPage() {
           )
         })}
 
-        {colmenasDelSeleccionado.length === 0 && (
+        {colmenasFiltradas.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-[#80756A]">No hay colmenas registradas en este colmenar.</p>
+            <p className="text-[#80756A]">
+              {busqueda ? `No se encontraron colmenas con "${busqueda}"` : 'No hay colmenas registradas en este colmenar.'}
+            </p>
           </div>
         )}
       </div>

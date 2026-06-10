@@ -1,8 +1,13 @@
+// src/pages/DashboardPage.jsx
 import { useState } from 'react'
 import { MapPin, ArrowLeft, Droplets, Weight } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { colmenares, colmenas } from '../lib/mockData.js'
 
 function ColmenarCard({ item, alClick }) {
+  const colmenasDelColmenar = colmenas.filter((c) => c.colmenarId === item.id)
+  const criticas = colmenasDelColmenar.filter((c) => c.nivelAlimento <= 35).length
+
   return (
     <button
       onClick={alClick}
@@ -14,9 +19,16 @@ function ColmenarCard({ item, alClick }) {
             <path d="M12 2C9.5 2 7.5 3.5 7 5.5C6 5.2 5 5.5 4.5 6.5C4 7.5 4.5 8.7 5.5 9.2C5.2 10 5.2 10.8 5.5 11.5L3 14l2 1-2 2 3-1c.8 1.2 2 2.1 3.5 2.5L9 21h1.5l.5-2h2l.5 2H15l-.5-2.5c1.5-.4 2.7-1.3 3.5-2.5l3 1-2-2 2-1-2.5-2.5c.3-.7.3-1.5 0-2.3 1-.5 1.5-1.7 1-2.7C19 4.5 18 4.2 17 4.5 16.5 3.5 14.5 2 12 2z" />
           </svg>
         </div>
-        <span className="text-[#F5A623] text-sm font-semibold bg-[#F5A623]/10 px-3 py-1 rounded-lg">
-          {item.cantidadColmenas} colmenas
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-[#F5A623] text-sm font-semibold bg-[#F5A623]/10 px-3 py-1 rounded-lg">
+            {item.cantidadColmenas} colmenas
+          </span>
+          {criticas > 0 && (
+            <span className="text-[#E53935] text-xs font-semibold bg-[#E53935]/10 px-2 py-0.5 rounded-lg">
+              {criticas} crítica{criticas > 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
       </div>
       <h3 className="text-[#FFF8ED] font-semibold text-lg mb-2">{item.nombre}</h3>
       <div className="flex items-center gap-1.5 text-[#80756A] text-sm">
@@ -35,8 +47,14 @@ function ColmenaDetalle({ colmena }) {
       ? '#F5A623'
       : '#4CAF50'
 
+  const esCritica = colmena.nivelAlimento <= 35
+
   return (
-    <div className="bg-[#2A1B13] border border-[#3a2a1e] rounded-xl p-5">
+    <div className={`border rounded-xl p-5 transition-all duration-200 ${
+      esCritica
+        ? 'bg-[#2A1B13] border-[#E53935]/30'
+        : 'bg-[#2A1B13] border-[#3a2a1e]'
+    }`}>
       <div className="flex items-center justify-between mb-4">
         <span className="text-[#FFF8ED] font-semibold text-base">{colmena.numero}</span>
         <span
@@ -76,10 +94,21 @@ function ColmenaDetalle({ colmena }) {
 
 function DashboardPage() {
   const [colmenarSeleccionado, setColmenarSeleccionado] = useState(null)
+  const navigate = useNavigate()
+
+  const alertasActivas = colmenas.filter((c) => c.nivelAlimento <= 35).length + 1 // +1 señal
+  const sensoresOnline = colmenas.length - 1
 
   const colmenasDelSeleccionado = colmenarSeleccionado
     ? colmenas.filter((c) => c.colmenarId === colmenarSeleccionado.id)
     : []
+
+  const stats = [
+    { label: 'Colmenares', valor: colmenares.length, accion: null },
+    { label: 'Total colmenas', valor: colmenas.length, accion: null },
+    { label: 'Alertas activas', valor: alertasActivas, destacado: true, accion: () => navigate('/notificaciones') },
+    { label: 'Sensores online', valor: `${sensoresOnline}/${colmenas.length}`, accion: null },
+  ]
 
   if (colmenarSeleccionado) {
     return (
@@ -123,18 +152,27 @@ function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: 'Colmenares', valor: colmenares.length },
-          { label: 'Total colmenas', valor: colmenas.length },
-          { label: 'Alertas activas', valor: 2, destacado: true },
-          { label: 'Sensores online', valor: `${colmenas.length - 1}/${colmenas.length}` },
-        ].map(({ label, valor, destacado }) => (
-          <div key={label} className="bg-[#231710] border border-[#2A1B13] rounded-xl p-4">
-            <p className="text-[#80756A] text-xs mb-1">{label}</p>
-            <p className={`text-2xl font-bold ${destacado ? 'text-[#E53935]' : 'text-[#FFF8ED]'}`}>
-              {valor}
-            </p>
-          </div>
+        {stats.map(({ label, valor, destacado, accion }) => (
+          accion ? (
+            <button
+              key={label}
+              onClick={accion}
+              className="bg-[#231710] border border-[#2A1B13] rounded-xl p-4 text-left hover:border-[#E53935]/40 hover:bg-[#2A1B13] transition-all duration-200 group"
+            >
+              <p className="text-[#80756A] text-xs mb-1 group-hover:text-[#FFF8ED] transition-colors">{label}</p>
+              <p className={`text-2xl font-bold ${destacado ? 'text-[#E53935]' : 'text-[#FFF8ED]'}`}>
+                {valor}
+              </p>
+              <p className="text-[#E53935]/60 text-xs mt-1 group-hover:text-[#E53935] transition-colors">Ver alertas →</p>
+            </button>
+          ) : (
+            <div key={label} className="bg-[#231710] border border-[#2A1B13] rounded-xl p-4">
+              <p className="text-[#80756A] text-xs mb-1">{label}</p>
+              <p className={`text-2xl font-bold ${destacado ? 'text-[#E53935]' : 'text-[#FFF8ED]'}`}>
+                {valor}
+              </p>
+            </div>
+          )
         ))}
       </div>
 
